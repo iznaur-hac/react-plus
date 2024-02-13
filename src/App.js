@@ -1,25 +1,27 @@
 import { useEffect } from "react";
-import { useState } from "react";
 import Bin from "./assets/bin.svg";
+import { useDispatch, useSelector } from "react-redux";
+import { LoadTodos } from "./data/actions";
+import { removeAction } from "./data/todosReducer";
+import { activeAction } from "./data/todosReducer";
 
 function App() {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const todos = useSelector((state) => state.todos);
+  const loading = useSelector((state) => state.loading);
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    fetch("https://jsonplaceholder.typicode.com/todos")
-      .then((response) => response.json())
-      .then((json) => {
-        setData(json);
-        setLoading(false);
-      });
+    dispatch(LoadTodos());
   }, []);
 
-  const deleteBtn = (id) => {
-    setData([...data.filter((item) => item.id !== id)]);
+  const remove = (id) => {
+    dispatch(removeAction(id));
   };
 
-  useEffect(() => {});
+  const active = (id) => {
+    dispatch(activeAction(id));
+  };
 
   return (
     <div className="wrapper">
@@ -32,29 +34,35 @@ function App() {
           <h2 className="tasks__title">tasks</h2>
 
           <div className="tasks__items">
-            {data.map((item) => {
-              return (
-                <div
-                  className={
-                    item.completed
-                      ? "tasks__item tasks__item_active"
-                      : "tasks__item"
-                  }
-                  key={item.id}>
-                  <p>{item.title}</p>
-                  <input
-                    type="checkbox"
-                    checked={item.completed}
-                    className="tasks__input"
-                  />
-                  <img
-                    src={Bin}
-                    className="tasks__bin"
-                    onClick={() => deleteBtn(item.id)}
-                  />
-                </div>
-              );
-            })}
+            {loading ? (
+              <h2 className="load">loading...</h2>
+            ) : (
+              todos.map((item) => {
+                return (
+                  <div
+                    className={
+                      item.completed
+                        ? "tasks__item"
+                        : "tasks__item tasks__item_active"
+                    }
+                    key={item.id}>
+                    <p>{item.title}</p>
+                    <input
+                      type="checkbox"
+                      checked={item.completed}
+                      className="tasks__input"
+                      onChange={() => active(item.id)}
+                    />
+                    <img
+                      src={Bin}
+                      className="tasks__bin"
+                      alt="bin"
+                      onClick={() => remove(item.id)}
+                    />
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
       </div>
